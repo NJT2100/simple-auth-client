@@ -1,0 +1,5 @@
+{
+    "verbose": true,
+    "watch": ["server.js", "express.js", "./routes", "./controllers", "./models", "./config"],
+    "exec": "webpack --mode=development --config webpack.config.server.js && webpack --mode=development --config webpack.config.client.js && w && node ./dist/server.generated.js && node ./dist/server.generated.js"
+}

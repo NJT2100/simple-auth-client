@@ -1,0 +1,8 @@
+.App h1 {
+    font-weight: bold;
+}
+
+.App .content-area {
+    width: 90%;
+    margin: auto 0;
+}
