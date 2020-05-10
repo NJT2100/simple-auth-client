@@ -2,16 +2,28 @@ import User from '../models/user.model'
 import _ from 'lodash'
 
 const create = (req, res, next) => {
-    const user = new User(req.body)
-    user.save((err, result) => {
+    User.findOne({ email: req.body.email }, (err, olduser) => {
         if (err) {
             return res.status(400).json({
-                error: 'failed to create user'
+                error: 'Something went wrong'
+            })
+        } else if (olduser) {
+            return res.status(400).json({
+                error: 'E-mail already registered'
+            })
+        } else {
+            const user = new User(req.body)
+            user.save((err, result) => {
+                if (err) {
+                    return res.status(400).json({
+                        error: 'failed to create user'
+                    })
+                }
+                res.status(200).json({
+                    message: 'successfully signed up'
+                })
             })
         }
-        res.status(200).json({
-            message: 'successfully signed up'
-        })
     })
 }
 
@@ -23,7 +35,7 @@ const list = (req, res) => {
             })
         }
         res.json(user)
-    }).select('username email password created modified')
+    }).select('username email password created modified lastLogin')
 }
 
 const update = (req, res) => {

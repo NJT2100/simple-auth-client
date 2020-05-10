@@ -11,15 +11,12 @@ class Signup extends Component {
             username: '',
             password_1: '',
             password_2: '',
-            emailValid: false,
             emailMessage: '',
-            usernameValid: false,
             usernameMessage: '',
-            passwordValid: false,
             passwordMessage: '',
-            passwordMatch: false,
             passwordMatchMessage: '',
-            formValid: true
+            formValid: true,
+            formErrorMessage: ''
         }
     }
 
@@ -34,8 +31,9 @@ class Signup extends Component {
         //Prevent default behaviour of onSubmit
         e.preventDefault()
         this.setState((state) => ({
-            formValid: state.emailValid && state.usernameValid &&
-                state.passwordValid && state.passwordMatch 
+            formValid: !state.emailMessage && !state.usernameMessage &&
+                !state.passwordMessage && !state.passwordMatchMessage,
+            formErrorMessage: 'There are errors in the below form.' 
         }))
         if (!this.state.formValid) return
         const data = {
@@ -46,21 +44,31 @@ class Signup extends Component {
         const url = "http://localhost:4000/api/users"
         postData(url, data)
             .then(response => {
-                console.log(response)
+                if (response.ok) {
+                    response.json().then(json => {
+                        console.log(json)
+                    }).then(() => 
+                        this.props.history.push('/')
+                    )
+                } else {
+                    response.json().then(json => {
+                        this.setState({
+                            formErrorMessage: json.error
+                        })
+                    })
+                }
             })
     }
 
     validateEmail = e => {
         //Validate that email was entered
         if (this.state.email.length > 0) {
-            this.setState(({
-                emailMessage: '',
-                emailValid: true
-            }) )
+            this.setState({
+                emailMessage: ''
+            }) 
         } else {
             this.setState({
                 emailMessage: 'Email required.',
-                emailValid: false
             }) 
         }
     }
@@ -69,13 +77,11 @@ class Signup extends Component {
         //Validate that the user name meets the length requirement
         if (this.state.username.length < 6 || this.state.username.length > 20) {
             this.setState({
-                usernameMessage: 'Username must be 6 - 20 characters.',
-                usernameValid: false
+                usernameMessage: 'Username must be 6 - 20 characters.'
             })
         } else {
             this.setState({
-                usernameMessage: '',
-                usernameValid: true
+                usernameMessage: ''
             })
         }
     }
@@ -84,28 +90,29 @@ class Signup extends Component {
         //Validate that the password meets length requirement
         if (this.state.password_1.length < 6) {
             this.setState({
-                passwordMessage: 'Password must consist of atleast 6 characters.',
-                passwordValid: false
+                passwordMessage: 'Password must consist of at least 6 characters.'
             })
             return
         } else {
             this.setState({
                 passwordMessage: '',
-                passwordValid: true
             })
         }
 
         //Validate that password contains atleast one letter and one number
         if (/\d/.test(this.state.password_1) && /[a-zA-Z]/.test(this.state.password_1)) {
             this.setState({
-                passwordMessage: '',
-                passwordValid: true
+                passwordMessage: ''
             })
         } else {
             this.setState({
-                passwordMessage: 'Password must consist of at least 1 letter and 1 number.',
-                passwordValid: false
+                passwordMessage: 'Password must consist of at least 1 letter and 1 number.'
             })
+        }
+
+        //if confirm password field is non empty
+        if (this.state.password_1.length > 0 && this.state.password_2.length > 0) {
+            this.validatePasswordMatch(e)
         }
     }
 
@@ -113,12 +120,10 @@ class Signup extends Component {
         //Valdiate that the passwords match
         if (this.state.password_1 === this.state.password_2) {
             this.setState({
-                passwordMatch: true,
                 passwordMatchMessage: ''
             })
         } else {
             this.setState({
-                passwordMatch: false,
                 passwordMatchMessage: 'Passwords do not match.'
             })
         }
@@ -128,10 +133,10 @@ class Signup extends Component {
         return (
             <div className="signup-container">
                 <h1>Register</h1>
+                {
+                    this.state.formErrorMessage && (<div className="error-message">{this.state.formErrorMessage}</div>)
+                }
                 <form className="form-horizontal" onSubmit={this.handleOnSubmit} noValidate>
-                    {
-                        !this.state.formValid && (<div className="error-message">There are errors in the registration form.</div>)
-                    }
                     <div className="form-group">
                         <div className="col-sm-10">
                             <input
@@ -143,7 +148,7 @@ class Signup extends Component {
                                 onBlur={this.validateEmail}
                             />
                             {
-                                !this.state.emailValid && (<div className="error-message">{this.state.emailMessage}</div>)
+                                this.state.emailMessage && (<div className="error-message">{this.state.emailMessage}</div>)
                             }
                         </div>
                     </div>
@@ -158,7 +163,7 @@ class Signup extends Component {
                                 onBlur={this.validateUsername}
                             />
                             {
-                                !this.state.usernameValid && (<div className="error-message">{this.state.usernameMessage}</div>)
+                                this.state.usernameMessage && (<div className="error-message">{this.state.usernameMessage}</div>)
                             }
                         </div>
                     </div>
@@ -173,7 +178,7 @@ class Signup extends Component {
                                 onBlur={this.validatePassword}
                             />
                             {
-                                !this.state.passwordValid && (<div className="error-message">{this.state.passwordMessage}</div>)
+                                this.state.passwordMessage && (<div className="error-message">{this.state.passwordMessage}</div>)
                             }
                         </div>
                     </div>
@@ -188,7 +193,7 @@ class Signup extends Component {
                                 onBlur={this.validatePasswordMatch}
                             />
                             {
-                                !this.state.passwordMatch && (<div className="error-message">{this.state.passwordMatchMessage}</div>)
+                                this.state.passwordMatchMessage && (<div className="error-message">{this.state.passwordMatchMessage}</div>)
                             }
                         </div>
                     </div>

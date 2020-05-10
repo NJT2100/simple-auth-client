@@ -1,23 +1,22 @@
 import mongoose from 'mongoose'
+import config from '../config/config'
 import bcrypt from 'bcrypt'
-
-const saltRounds = 10
 
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         trim: true,
         unique: true,
-        required: true
+        required: [true, 'E-mail required']
     },
     username: {
         type: String,
         trim: true,
-        required: true
+        required: [true, 'Username required'],
     },
     password: {
         type: String,
-        required: true
+        required: [true, 'Password required'],
     },
     created: {
         type: Date,
@@ -28,14 +27,15 @@ const UserSchema = new mongoose.Schema({
         default: Date.now
     },
     lastLogin: {
-        type: Date
+        type: Date,
+        default: null
     }
 })
 
 UserSchema.pre('save', function(next) {
     let user = this
     if (!user.isModified('password')) return next()
-    bcrypt.genSalt(saltRounds, function(err, salt) {
+    bcrypt.genSalt(config.saltRounds, function(err, salt) {
         if (err) return next(err)
         bcrypt.hash(user.password, salt, function(err, hash) {
             if (err) return next(err)

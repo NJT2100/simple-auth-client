@@ -9,7 +9,8 @@ class Signin extends Component {
 
         this.state = {
             email: '',
-            password: ''
+            password: '',
+            errorMessage: ''
         }
     }
 
@@ -22,6 +23,17 @@ class Signin extends Component {
 
     handleOnSubmit = e => {
         e.preventDefault()
+        if (this.state.email.length === 0) {
+            this.setState({
+                errorMessage: 'E-mail required.'
+            })
+            return
+        } else if (this.state.password.length === 0) {
+            this.setState({
+                errorMessage: 'Password required.'
+            })
+            return
+        }
         const data = {
             'email': this.state.email,
             'password': this.state.password
@@ -29,8 +41,19 @@ class Signin extends Component {
         const url = 'http://localhost:4000/api/auth/signin'
         postData(url, data)
             .then(response => {
-                console.log(response)
-                auth.authenticate(response, null)
+                if (response.ok) {
+                    response.json().then(json => {
+                        auth.authenticate(json.token)
+                    }).then(() => 
+                        this.props.history.push('/')
+                    )
+                } else {
+                    response.json().then(json => {
+                        this.setState({
+                            errorMessage: json.error
+                        })
+                    })
+                }
             })
     }
 
@@ -38,6 +61,9 @@ class Signin extends Component {
         return (
             <div className="signup-container">
                 <h1>Sign In</h1>
+                {
+                    this.state.errorMessage && (<div className="error-message">{this.state.errorMessage}</div>)
+                }
                 <form className="form-horizontal" onSubmit={this.handleOnSubmit} noValidate>
                     <div className="form-group">
                         <div className="col-sm-10">

@@ -7,15 +7,13 @@ const auth = {
         else
             false
     },
-    authenticate(jwt, callback) {
+    authenticate(jwt) {
         if (typeof window !== "undefined")
             sessionStorage.setItem('jwt', JSON.stringify(jwt))
-        if (typeof callback !== null) callback()
     },
-    signout(callback) {
+    signout() {
         if (typeof window !== "undefined")
             sessionStorage.removeItem('jwt')
-        callback()
     }
 }
 

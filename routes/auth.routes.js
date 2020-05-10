@@ -9,4 +9,7 @@ router.route('/signin')
 router.route('/signout')
     .get(authCtrl.signout)
 
+router.route('/id')
+    .get(authCtrl.userIdByToken)
+
 export default router
